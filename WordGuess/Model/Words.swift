@@ -28,25 +28,30 @@ class Words {
     }
     
     func load(url: URL?) {
+        guard let url else {
+            loadingState = .failed
+            return
+        }
+        loadingState = .loading
+
         Task {
             var _words = [Int:Set<String>]()
-            
-            if let url {
-                do {
-                    for try await word in url.lines {
-                        _words[word.count, default: Set<String>()].insert(word.uppercased())
-                    }
-                } catch {
-                    print("Words could not load words from \(url): \(error)")
-                    loadingState = .failed
+
+            do {
+                for try await word in url.lines {
+                    _words[word.count, default: Set<String>()].insert(word.uppercased())
                 }
+            } catch {
+                print("Words could not load words from \(url): \(error)")
+                loadingState = .failed
+                return
             }
             
             words = _words
             loadingState = .loaded
             
             if count > 0 {
-                print("Words loaded \(count) words from \(url?.absoluteString ?? "nil")")
+                print("Words loaded \(count) words from \(url.absoluteString)")
             }
         }
     }
