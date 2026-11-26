@@ -11,7 +11,7 @@ import SwiftUI
 struct WordGuessApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            WordGuessView()
         }
     }
 }
