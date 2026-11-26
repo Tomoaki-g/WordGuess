@@ -37,7 +37,7 @@ struct WordGuessView: View {
                         }
                         .environment(\.words, words)
 
-                        ForEach(attempts.indices, id: \.self) { index in
+                        ForEach(attempts.indices.reversed(), id: \.self) { index in
                             let letters = Array(attempts[index])
                             let masterLetters = Array(masterWord)
                             
