@@ -14,12 +14,20 @@ extension EnvironmentValues {
 @Observable
 class Words {
     private var words = Dictionary<Int, Set<String>>()
-    var attempts: [Words] = [Words]()
-    var kind: Kind = .unknown
+    private(set) var loadingState: LoadingState = .loading
+    private(set) var url = URL(string: "https://web.stanford.edu/class/cs193p/common.words")
     static let shared =
         Words(from: URL(string: "https://web.stanford.edu/class/cs193p/common.words"))
 
     private init(from url: URL? = nil) {
+        load(url: url)
+    }
+    
+    var count: Int {
+        words.values.reduce(0) { $0 + $1.count }
+    }
+    
+    func load(url: URL?) {
         Task {
             var _words = [Int:Set<String>]()
             
@@ -30,19 +38,17 @@ class Words {
                     }
                 } catch {
                     print("Words could not load words from \(url): \(error)")
+                    loadingState = .failed
                 }
             }
             
             words = _words
+            loadingState = .loaded
             
             if count > 0 {
                 print("Words loaded \(count) words from \(url?.absoluteString ?? "nil")")
             }
         }
-    }
-    
-    var count: Int {
-        words.values.reduce(0) { $0 + $1.count }
     }
     
     func contains(_ word: String) -> Bool {
@@ -73,10 +79,16 @@ class Words {
     }
     
     enum Kind: Equatable {
-        case master(isHidden: Bool)
+        case master
         case guess
         case attempt([String])
         case unknown
+    }
+    
+    enum LoadingState {
+        case loading
+        case loaded
+        case failed
     }
 }
 

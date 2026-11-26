@@ -12,10 +12,8 @@ struct WordView: View {
     let masterWord: String
     let maxLength = 1
     let kind: Words.Kind
-    @FocusState private var isFocused: Bool
     @FocusState private var selection: Int?
     @State var text: String = ""
-    @State var masterText: String = ""
     @Binding var guessWord: [String]
     @Binding var isSolved: Bool
     
@@ -26,7 +24,7 @@ struct WordView: View {
     var body: some View {
         HStack(spacing: 8) {
             ForEach(0..<masterWord.count, id: \.self) { index in
-                pegShape(text: masterFlag ? masterWord : text, index: index)
+                pegShape(index: index)
                     .background {
                         if selection == index && !masterFlag {
                             Circle()
@@ -37,7 +35,6 @@ struct WordView: View {
                         TapGesture().onEnded {
                             if !masterFlag {
                                 selection = index
-                                isFocused = true
                             }
                         }
                     )
@@ -54,11 +51,11 @@ struct WordView: View {
         .padding(.horizontal)
     }
     
-    func pegShape(text: String, index: Int) -> some View {
+    func pegShape(index: Int) -> some View {
         Circle()
             .fill(isSolved && !masterFlag ? Color.yellow.opacity(0.4) : Color.gray.opacity(0.4))
             .overlay {
-                if case .master(_) = kind {
+                if case .master = kind {
                     if isSolved {
                         Text(String(Array(masterWord)[index]))
                     }
@@ -111,7 +108,7 @@ struct WordView: View {
         switch kind {
         case .guess, .attempt(_):
             return false
-        case .master(_), .unknown:
+        case .master, .unknown:
             return true
         }
     }

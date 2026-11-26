@@ -20,12 +20,9 @@ struct WordGuessView: View {
             if let masterWord, masterWord != "" {
                 restartButton
                     .padding()
-                
-                WordView(masterWord: masterWord, kind: .master(isHidden: true), guessWord: $guessWord, isSolved: $isSolved) { _ in
-                    // マスターコードの行は何もしない
-                }
-                    .environment(\.words, words)
-                
+
+                WordView(masterWord: masterWord, kind: .master, guessWord: $guessWord, isSolved: $isSolved)
+                    
                 ScrollView {
                     VStack(spacing: 8) {
                         WordView(masterWord: masterWord, kind: .attempt(guessWord), guessWord: $guessWord, isSolved: $isSolved) { answer in
@@ -35,8 +32,7 @@ struct WordGuessView: View {
                                 }
                             }
                         }
-                        .environment(\.words, words)
-
+                        
                         ForEach(attempts.indices.reversed(), id: \.self) { index in
                             let letters = Array(attempts[index])
                             let masterLetters = Array(masterWord)
@@ -44,7 +40,7 @@ struct WordGuessView: View {
                             HStack(spacing: 8) {
                                 ForEach(0..<masterWord.count, id: \.self) { letterIndex in
                                     let isExact = letters.indices.contains(letterIndex)
-                                        && masterLetters[letterIndex] == letters[letterIndex]
+                                    && masterLetters[letterIndex] == letters[letterIndex]
                                     Circle()
                                         .fill(isExact ? Color.yellow.opacity(0.4) : Color.gray.opacity(0.4))
                                         .overlay {
@@ -63,16 +59,32 @@ struct WordGuessView: View {
                     }
                 }
             } else {
-                ProgressView("読み込み中・・・")
+                if words.loadingState == .loading {
+                    ProgressView("読み込み中・・・")
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                } else if words.loadingState == .failed {
+                    VStack(spacing: 16) {
+                        Text("データの取得に失敗しました。")
+                            .font(.system(size: 24))
+                        
+                        Button("再試行") {
+                            words.load(url: words.url)
+                        }
+                        .font(.system(size: 24))
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                }
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .ignoresSafeArea(.keyboard, edges: .bottom)
         .onChange(of: words.count, initial: true) {
             if words.count > 0, masterWord == nil {
-                masterWord = words.random(length: Int.random(in: 3...6))
-                guessWord = Array(repeating: "", count: masterWord!.count)
-                print("masterWord: \(masterWord ?? "")")
+                if let word = words.random(length: Int.random(in: 3...6)) {
+                    masterWord = word
+                    guessWord = Array(repeating: "", count: word.count)
+                    print("masterWord: \(word)")
+                }
             }
         }
     }
