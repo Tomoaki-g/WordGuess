@@ -39,13 +39,14 @@ struct WordGuessView: View {
 
                         ForEach(attempts.indices, id: \.self) { index in
                             let letters = Array(attempts[index])
+                            let masterLetters = Array(masterWord)
+                            
                             HStack(spacing: 8) {
-                                ForEach(
-                                    0..<masterWord.count,
-                                    id: \.self
-                                ) { letterIndex in
+                                ForEach(0..<masterWord.count, id: \.self) { letterIndex in
+                                    let isExact = letters.indices.contains(letterIndex)
+                                        && masterLetters[letterIndex] == letters[letterIndex]
                                     Circle()
-                                        .fill(Color.gray.opacity(0.4))
+                                        .fill(isExact ? Color.yellow.opacity(0.4) : Color.gray.opacity(0.4))
                                         .overlay {
                                             Text(letters.indices.contains(letterIndex)
                                                  ? String(letters[letterIndex]) : "")

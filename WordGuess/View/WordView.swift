@@ -56,7 +56,7 @@ struct WordView: View {
     
     func pegShape(text: String, index: Int) -> some View {
         Circle()
-            .fill(Color.gray.opacity(0.4))
+            .fill(isSolved && !masterFlag ? Color.yellow.opacity(0.4) : Color.gray.opacity(0.4))
             .overlay {
                 if case .master(_) = kind {
                     if isSolved {
@@ -70,10 +70,11 @@ struct WordView: View {
                         .multilineTextAlignment(.center)
                         .focused($selection, equals: index)
                         .disabled(masterFlag || isSolved)
-                        .onChange(of: guessWord[index]) {
+                        .onChange(of: guessWord[index]) { _, newValue in
                             guard selection == index,
                                   !guessWord[index].isEmpty else { return }
-
+                            guessWord[index] = newValue.uppercased()
+                            
                             if index + 1 < guessWord.count {
                                 selection = index + 1
                             } else {
@@ -91,12 +92,12 @@ struct WordView: View {
             withAnimation {
                 if words.attemptGuess(guessWord: &guessWord, count: masterWord.count) {
                     isSolved = guessWord.joined().uppercased() == masterWord.uppercased()
-                    onGuess(answer)
 
                     if !isSolved {
                         guessWord = Array(repeating: "", count: masterWord.count)
                     }
                 }
+                onGuess(answer)
                 selection = isSolved ? nil : 0
             }
         }
